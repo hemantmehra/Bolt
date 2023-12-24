@@ -8,12 +8,12 @@ namespace Bolt {
         return m_label_idx++;
     }
 
-    std::string Compiler::compile(std::shared_ptr<Object> obj)
+    std::string Compiler::compile(std::vector<std::shared_ptr<Object>> obj_list)
     {
         m_label_idx = 0;
         std::stringstream ss;
         m_object_list.clear();
-        eval(obj);
+        compiler_to_objects(obj_list);
 
         ss << "segment .text" << '\n';
         ss << "global _start" << '\n';
@@ -98,46 +98,75 @@ namespace Bolt {
 
     void Compiler::eval(std::shared_ptr<Object> obj)
     {
-        if (obj->is_scaler() || obj->is_symbol()) {
+        if (obj->is_scaler()) {
             m_object_list.push_back(obj);
             return;
         }
 
-        // else if (obj->is_cons()) {
-        //     OBJECT_PTR car = NODE_CAR(obj);
-        //     if (car->is_symbol() && SYMBOL_PTR_CAST(car)->to_string() == "if") {
-        //         int else_label_idx = generate_label_idx();
-        //         int endif_label_idx = generate_label_idx();
+        else if (obj->is_expression()) {
+            auto exp = EXP_SHARED_PTR_CAST(obj);
+            for (size_t i = 1; i < exp->length(); i++) {
+                m_object_list.push_back(exp->get(i));
+            }
 
-        //         auto if_type = LISP::PrimitiveProcedure::Type::If;
-        //         auto else_type = LISP::PrimitiveProcedure::Type::Else;
-        //         auto endif_type = LISP::PrimitiveProcedure::Type::EndIf;
-
-        //         auto p_if = MAKE_PRIMITVE_PROCEDURE2(if_type, else_label_idx);
-        //         auto p_else = MAKE_PRIMITVE_PROCEDURE3(else_type, else_label_idx, endif_label_idx);
-        //         auto p_endif = MAKE_PRIMITVE_PROCEDURE2(endif_type, endif_label_idx);
-
-        //         auto exp = NODE_CAR(NODE_CDR(obj));
-        //         auto if_block = NODE_CAR(NODE_CDR(NODE_CDR(obj)));
-        //         auto else_block = NODE_CAR(NODE_CDR(NODE_CDR(NODE_CDR(obj))));
-
-        //         eval(exp, env);
-        //         m_object_list.push_back(OBJECT_PTR_CAST(p_if));
-        //         eval(if_block, env);
-        //         m_object_list.push_back(OBJECT_PTR_CAST(p_else));
-        //         eval(else_block, env);
-        //         m_object_list.push_back(OBJECT_PTR_CAST(p_endif));
-        //     }
-        // }
-
-        // else {
-        //     CONS_PTR cons_obj = CONS_PTR_CAST(obj);
-        //     OBJECT_PTR proc = cons_obj->as_car();
-        //     OBJECT_PTR args = cons_obj->as_cdr();
-        //     eval_list(args, env);
-        //     eval(proc, env);
-        //     return;
-        // }
+            m_object_list.push_back(exp->head());
+            return;
+        }
     }
 
+    void Compiler::compiler_to_objects(std::vector<std::shared_ptr<Object>> obj_list)
+    {
+        auto it = obj_list.begin();
+        bool compiled = false;
+
+        while (it != obj_list.end()) {
+            auto obj = *it;
+            if (obj->is_expression()) {
+                auto exp = EXP_SHARED_PTR_CAST(obj);
+                if (exp->head()->to_string() == "if") {
+                    compiled = true;
+                }
+            }
+
+            if (!compiled) eval(obj);
+
+            // else if (obj->is_cons()) {
+            //     OBJECT_PTR car = NODE_CAR(obj);
+            //     if (car->is_symbol() && SYMBOL_PTR_CAST(car)->to_string() == "if") {
+            //         int else_label_idx = generate_label_idx();
+            //         int endif_label_idx = generate_label_idx();
+
+            //         auto if_type = LISP::PrimitiveProcedure::Type::If;
+            //         auto else_type = LISP::PrimitiveProcedure::Type::Else;
+            //         auto endif_type = LISP::PrimitiveProcedure::Type::EndIf;
+
+            //         auto p_if = MAKE_PRIMITVE_PROCEDURE2(if_type, else_label_idx);
+            //         auto p_else = MAKE_PRIMITVE_PROCEDURE3(else_type, else_label_idx, endif_label_idx);
+            //         auto p_endif = MAKE_PRIMITVE_PROCEDURE2(endif_type, endif_label_idx);
+
+            //         auto exp = NODE_CAR(NODE_CDR(obj));
+            //         auto if_block = NODE_CAR(NODE_CDR(NODE_CDR(obj)));
+            //         auto else_block = NODE_CAR(NODE_CDR(NODE_CDR(NODE_CDR(obj))));
+
+            //         eval(exp, env);
+            //         m_object_list.push_back(OBJECT_PTR_CAST(p_if));
+            //         eval(if_block, env);
+            //         m_object_list.push_back(OBJECT_PTR_CAST(p_else));
+            //         eval(else_block, env);
+            //         m_object_list.push_back(OBJECT_PTR_CAST(p_endif));
+            //     }
+            // }
+
+            // else {
+            //     CONS_PTR cons_obj = CONS_PTR_CAST(obj);
+            //     OBJECT_PTR proc = cons_obj->as_car();
+            //     OBJECT_PTR args = cons_obj->as_cdr();
+            //     eval_list(args, env);
+            //     eval(proc, env);
+            //     return;
+            // }
+
+            it++;
+        }
+    }
 }

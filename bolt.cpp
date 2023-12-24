@@ -8,9 +8,6 @@
 
 int main()
 {
-    // Bolt::Scaler s1(42);
-    // Bolt::Scaler s1(33);
-    // Bolt::Symbol sym("add");
     Bolt::Expression exp;
 
     std::shared_ptr<Bolt::Object> s1 = std::static_pointer_cast<Bolt::Object>(std::make_shared<Bolt::Scaler>(42));
@@ -25,8 +22,10 @@ int main()
     // std::cout << exp.head()->to_string() << '\n';
 
     Bolt::Compiler compiler;
+    std::vector<std::shared_ptr<Bolt::Object>> code;
+    code.push_back(s1);
 
-    std::string out_code = compiler.compile(s1);
+    std::string out_code = compiler.compile(code);
     std::cout << out_code << '\n';
 
     return 0;
