@@ -13,7 +13,7 @@ namespace Bolt {
 
     std::shared_ptr<Object> Expression::get(size_t index)
     {
-        CHECK(m_obj_list.size() > (index + 1));
+        CHECK(m_obj_list.size() > index);
         return m_obj_list[index];
     }
 

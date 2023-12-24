@@ -10,4 +10,5 @@ add_executable(bolt bolt.cpp
                     LibBolt/Symbol.cpp
                     LibBolt/Expression.cpp
                     LibBolt/Compiler.cpp
+                    LibBolt/Instruction.cpp
 )

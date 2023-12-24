@@ -27,60 +27,55 @@ namespace Bolt {
                 ss << "    push " << SCALER_SHARED_PTR_CAST(obj)->as_integer() << '\n';
             }
 
-            // else if (obj->is_primitive_procedure()) {
+            else if (obj->is_instruction()) {
 
-            //     switch(PRIM_PTR_CAST(obj)->type()) {
+                switch(INS_SHARED_PTR_CAST(obj)->type()) {
 
-            //     case PrimitiveProcedure::Type::Add:
-            //     {
-            //         ss << "    ;; ADD" << '\n';
-            //         ss << "    pop rax" << '\n';
-            //         ss << "    pop rbx" << '\n';
-            //         ss << "    add rax, rbx" << '\n';
-            //         ss << "    push rax" << '\n';
-            //         break;
-            //     }
+                case Instruction::Type::OP_ADD:
+                {
+                    ss << "    ;; ADD" << '\n';
+                    ss << "    pop rax" << '\n';
+                    ss << "    pop rbx" << '\n';
+                    ss << "    add rax, rbx" << '\n';
+                    ss << "    push rax" << '\n';
+                    break;
+                }
 
-            //     case PrimitiveProcedure::Type::Mul:
-            //     {
-            //         break;
-            //     }
-
-            //     case PrimitiveProcedure::Type::If:
-            //     {
+                case Instruction::Type::K_If:
+                {
                     
-            //         std::string else_label_name = "label_" + std::to_string(PRIM_PTR_CAST(obj)->data_1());
+                    std::string else_label_name = "label_" + std::to_string(INS_SHARED_PTR_CAST(obj)->data_1());
 
-            //         ss << "    ;; If" << '\n';
-            //         ss << "    pop rax" << '\n';
-            //         ss << "    test rax, rax" << '\n';
-            //         ss << "    jz " << else_label_name << '\n';
-            //         break;
-            //     }
+                    ss << "    ;; If" << '\n';
+                    ss << "    pop rax" << '\n';
+                    ss << "    test rax, rax" << '\n';
+                    ss << "    jz " << else_label_name << '\n';
+                    break;
+                }
 
-            //     case PrimitiveProcedure::Type::Else:
-            //     {
+                case Instruction::Type::K_Else:
+                {
                     
-            //         std::string else_label_name = "label_" + std::to_string(PRIM_PTR_CAST(obj)->data_1());
-            //         std::string endif_label_name = "label_" + std::to_string(PRIM_PTR_CAST(obj)->data_2());
+                    std::string else_label_name = "label_" + std::to_string(INS_SHARED_PTR_CAST(obj)->data_1());
+                    std::string endif_label_name = "label_" + std::to_string(INS_SHARED_PTR_CAST(obj)->data_2());
 
-            //         ss << "    ;; Else" << '\n';
-            //         ss << "    jmp " << endif_label_name << '\n';
-            //         ss << else_label_name << ":" << '\n';
-            //         break;
-            //     }
+                    ss << "    ;; Else" << '\n';
+                    ss << "    jmp " << endif_label_name << '\n';
+                    ss << else_label_name << ":" << '\n';
+                    break;
+                }
 
-            //     case PrimitiveProcedure::Type::EndIf:
-            //     {
+                case Instruction::Type::K_EndIf:
+                {
                     
-            //         std::string endif_label_name = "label_" + std::to_string(PRIM_PTR_CAST(obj)->data_1());
+                    std::string endif_label_name = "label_" + std::to_string(INS_SHARED_PTR_CAST(obj)->data_1());
 
-            //         ss << "    ;; End If" << '\n';
-            //         ss << endif_label_name << ":" << '\n';
-            //         break;
-            //     }
-            //     }
-            // }
+                    ss << "    ;; End If" << '\n';
+                    ss << endif_label_name << ":" << '\n';
+                    break;
+                }
+                }
+            }
 
             // ss << '\n';
         }
