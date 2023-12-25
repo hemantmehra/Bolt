@@ -29,7 +29,7 @@ namespace Bolt {
         if (m_type == Type::Expression)
             ss << "(";
         else
-            ss << "{";
+            ss << "{\n";
         
         for (auto obj: m_obj_list) {
             ss << obj->to_string() << ' ';
@@ -38,7 +38,7 @@ namespace Bolt {
         if (m_type == Type::Expression)
             ss << ")";
         else
-            ss << "}";
+            ss << "\n}";
 
         return ss.str();
     }

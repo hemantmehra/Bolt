@@ -31,7 +31,7 @@ int main()
     // std::cout << out_code << '\n';
 
     Bolt::Tokenizer tokenizer;
-    auto tokens = tokenizer.tokenize("(defun func) (1 2)");
+    auto tokens = tokenizer.tokenize("(defun func) {(print 2) (ret 42)}");
     Bolt::Parser parser;
     parser.parse(tokens);
     return 0;
