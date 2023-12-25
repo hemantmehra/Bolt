@@ -6,6 +6,7 @@
 #include <LibBolt/Expression.h>
 #include <LibBolt/Compiler.h>
 #include <LibBolt/Instruction.h>
+#include <LibBolt/Parser.h>
 
 int main()
 {
@@ -26,8 +27,12 @@ int main()
     std::vector<std::shared_ptr<Bolt::Object>> code;
     code.push_back(std::static_pointer_cast<Bolt::Object>(exp));
 
-    std::string out_code = compiler.compile(code);
-    std::cout << out_code << '\n';
+    // std::string out_code = compiler.compile(code);
+    // std::cout << out_code << '\n';
 
+    Bolt::Tokenizer tokenizer;
+    auto tokens = tokenizer.tokenize("(defun func)");
+    Bolt::Parser parser;
+    parser.parse(tokens);
     return 0;
 }

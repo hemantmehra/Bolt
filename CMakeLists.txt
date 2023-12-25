@@ -12,4 +12,6 @@ add_executable(bolt bolt.cpp
                     LibBolt/Compiler.cpp
                     LibBolt/Instruction.cpp
                     LibBolt/Tokenizer.cpp
+                    LibBolt/Block.cpp
+                    LibBolt/Parser.cpp
 )
