@@ -5,13 +5,13 @@
 #include <vector>
 #include <LibBolt/Object.h>
 #include <LibBolt/Scaler.h>
-#include <LibBolt/Expression.h>
+#include <LibBolt/List.h>
 #include <LibBolt/Instruction.h>
 
 #define OBJECT_SHARED_PTR std::shared_ptr<Bolt::Object>
 #define OBJECT_SHARED_PTR_CAST(x) std::static_pointer_cast<Object>(x)
 #define SCALER_SHARED_PTR_CAST(x) std::static_pointer_cast<Scaler>(x)
-#define EXP_SHARED_PTR_CAST(x) std::dynamic_pointer_cast<Expression>(x)
+#define LIST_SHARED_PTR_CAST(x) std::dynamic_pointer_cast<List>(x)
 #define INS_SHARED_PTR_CAST(x) std::dynamic_pointer_cast<Instruction>(x)
 
 namespace Bolt {

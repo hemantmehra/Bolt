@@ -98,8 +98,8 @@ namespace Bolt {
             return;
         }
 
-        else if (obj->is_expression()) {
-            auto exp = EXP_SHARED_PTR_CAST(obj);
+        else if (obj->is_list()) {
+            auto exp = LIST_SHARED_PTR_CAST(obj);
             for (size_t i = 1; i < exp->length(); i++) {
                 m_object_list.push_back(exp->get(i));
             }
@@ -116,8 +116,8 @@ namespace Bolt {
 
         while (it != obj_list.end()) {
             auto obj = *it;
-            if (obj->is_expression()) {
-                auto exp = EXP_SHARED_PTR_CAST(obj);
+            if (obj->is_list()) {
+                auto exp = LIST_SHARED_PTR_CAST(obj);
                 if (exp->head()->to_string() == "if") {
                     compiled = true;
                 }

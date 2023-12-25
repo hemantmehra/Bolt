@@ -3,14 +3,14 @@
 #include <LibBolt/Object.h>
 #include <LibBolt/Scaler.h>
 #include <LibBolt/Symbol.h>
-#include <LibBolt/Expression.h>
+#include <LibBolt/List.h>
 #include <LibBolt/Compiler.h>
 #include <LibBolt/Instruction.h>
 #include <LibBolt/Parser.h>
 
 int main()
 {
-    std::shared_ptr<Bolt::Expression> exp = std::make_shared<Bolt::Expression>();
+    std::shared_ptr<Bolt::List> exp = std::make_shared<Bolt::List>(Bolt::List::Type::Expression);
 
     std::shared_ptr<Bolt::Object> s1 = std::static_pointer_cast<Bolt::Object>(std::make_shared<Bolt::Scaler>(42));
     std::shared_ptr<Bolt::Object> s2 = std::static_pointer_cast<Bolt::Object>(std::make_shared<Bolt::Scaler>(33));
@@ -31,7 +31,7 @@ int main()
     // std::cout << out_code << '\n';
 
     Bolt::Tokenizer tokenizer;
-    auto tokens = tokenizer.tokenize("(defun func)");
+    auto tokens = tokenizer.tokenize("(defun func) (1 2)");
     Bolt::Parser parser;
     parser.parse(tokens);
     return 0;

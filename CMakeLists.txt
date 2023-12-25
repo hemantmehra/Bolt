@@ -8,7 +8,7 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 add_executable(bolt bolt.cpp
                     LibBolt/Scaler.cpp
                     LibBolt/Symbol.cpp
-                    LibBolt/Expression.cpp
+                    LibBolt/List.cpp
                     LibBolt/Compiler.cpp
                     LibBolt/Instruction.cpp
                     LibBolt/Tokenizer.cpp

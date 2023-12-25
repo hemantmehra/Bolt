@@ -3,11 +3,11 @@
 #include <LibBolt/Parser.h>
 #include <LibBolt/Scaler.h>
 #include <LibBolt/Symbol.h>
-#include <LibBolt/Expression.h>
+#include <LibBolt/List.h>
 
 // #define PARSER_DEBUG
 
-#define MAKE_EXP() std::make_shared<Expression>()
+#define MAKE_EXP() std::make_shared<List>(List::Type::Expression)
 #define OBJECT_SHARED_PTR_CAST(x) std::static_pointer_cast<Object>(x)
 #define MAKE_SCALER(x) std::make_shared<Scaler>(x)
 #define MAKE_SYMBOL(x) std::make_shared<Symbol>(x)
@@ -15,8 +15,8 @@
 namespace Bolt {
     std::shared_ptr<Object> Parser::parse(std::vector<Token> tokens)
     {
-        std::shared_ptr<Expression> ptr = MAKE_EXP();
-        std::vector<std::shared_ptr<Expression>> stack;
+        std::shared_ptr<List> ptr = MAKE_EXP();
+        std::vector<std::shared_ptr<List>> stack;
 
         for (auto curr_token: tokens)
         {
@@ -34,7 +34,7 @@ namespace Bolt {
 
             case Token::Type::End_Exp:
             {
-                std::shared_ptr<Expression> tmp1 = stack.back();
+                std::shared_ptr<List> tmp1 = stack.back();
                 tmp1->append(ptr);
                 ptr = tmp1;
                 stack.pop_back();
@@ -64,8 +64,8 @@ namespace Bolt {
         }
 
 #ifdef PARSER_DEBUG
-            std::cout << "Final Parse Tree: " << ptr->head()->to_string() << '\n';
+            std::cout << "Final Parse Tree: " << ptr->to_string() << '\n';
 #endif
-        return ptr->head();
+        return ptr;
     }
 }
