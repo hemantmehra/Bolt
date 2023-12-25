@@ -10,6 +10,8 @@ namespace Bolt {
 
     Token::Token(Type type, std::string x) : m_type(type), m_string_value(x) {}
 
+    Token::Token(Type type, Instruction::Type instruction_type) : m_type(type), m_instruction_type(instruction_type) {}
+
     int Token::as_scaler_value() { return m_scaler_value; }
 
     std::string Token::as_symbol_value() { return m_string_value; }
@@ -35,6 +37,9 @@ namespace Bolt {
             break;
         case Type::Scaler:
             return "[Token] " + std::to_string(as_scaler_value());
+            break;
+        case Type::Instruction:
+            return "[Token] instruction";
             break;
         default:
             break;
@@ -125,6 +130,11 @@ namespace Bolt {
 
             else if (is_number(it)) {
                 tokens.push_back(Token(Token::Type::Scaler, stoi(it)));
+            }
+
+            else if (Instruction::convert_to_instruction_type("I_" + it) != Instruction::Type::_INVALID) {
+                auto instruction_type = Instruction::convert_to_instruction_type("I_" + it);
+                tokens.push_back(Token(Token::Type::Instruction, instruction_type));
             }
 
             else {

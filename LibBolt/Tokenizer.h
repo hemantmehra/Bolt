@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <LibBolt/Instruction.h>
 
 namespace Bolt {
     class Token
@@ -16,12 +17,14 @@ namespace Bolt {
             Begin_Block,
             End_Block,
             Symbol,
-            Scaler
+            Scaler,
+            Instruction,
         };
 
         Token(Type);
         Token(Type, int);
         Token(Type, std::string);
+        Token(Type, Instruction::Type);
         Type type() { return m_type; } 
         int as_scaler_value();
         std::string as_symbol_value();
@@ -31,6 +34,7 @@ namespace Bolt {
         Type m_type;
         int m_scaler_value;
         std::string m_string_value;
+        Instruction::Type m_instruction_type;
     };
 
     class Tokenizer

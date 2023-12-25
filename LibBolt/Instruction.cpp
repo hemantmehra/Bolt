@@ -1,6 +1,12 @@
 #include <LibBolt/Instruction.h>
 
 namespace Bolt {
+    Instruction::Type Instruction::convert_to_instruction_type(std::string s)
+    {
+        if (table.find(s) != table.end()) return table[s];
+        return Instruction::Type::_INVALID;
+    }
+
     Instruction::Instruction(Instruction::Type type)
         : m_type(type) {}
     

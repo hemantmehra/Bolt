@@ -1,9 +1,17 @@
-#ifndef PRIMITIVE_PROCEDURE_H
-#define PRIMITIVE_PROCEDURE_H
+#ifndef INSTRUCTION_H
+#define INSTRUCTION_H
 
 #include <string>
 #include <memory>
+#include <unordered_map>
 #include <LibBolt/Object.h>
+
+#define ENUMERATE_INSTRUCTION_TYPES \
+    __ENUMERATE_INSTRUCTION_TYPE(_INVALID) \
+    __ENUMERATE_INSTRUCTION_TYPE(I_if) \
+    __ENUMERATE_INSTRUCTION_TYPE(I_else) \
+    __ENUMERATE_INSTRUCTION_TYPE(I_endIf) \
+    __ENUMERATE_INSTRUCTION_TYPE(I_add) \
 
 namespace Bolt {
     class Instruction : public Object
@@ -11,10 +19,9 @@ namespace Bolt {
     public:
         enum class Type
         {
-            K_If,
-            K_Else,
-            K_EndIf,
-            OP_ADD
+#define __ENUMERATE_INSTRUCTION_TYPE(x) x,
+        ENUMERATE_INSTRUCTION_TYPES
+#undef __ENUMERATE_INSTRUCTION_TYPE
         };
 
         Instruction(Type);
@@ -26,6 +33,14 @@ namespace Bolt {
 
         int data_1() { return m_data_1; }
         int data_2() { return m_data_2; }
+
+        inline static std::unordered_map<std::string, Type> table = {
+#define __ENUMERATE_INSTRUCTION_TYPE(x) {#x, Type::x},
+        ENUMERATE_INSTRUCTION_TYPES
+#undef __ENUMERATE_INSTRUCTION_TYPE            
+        };
+
+        static Type convert_to_instruction_type(std::string);
 
     private:
         Type m_type;

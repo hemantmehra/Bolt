@@ -31,7 +31,7 @@ namespace Bolt {
 
                 switch(INS_SHARED_PTR_CAST(obj)->type()) {
 
-                case Instruction::Type::OP_ADD:
+                case Instruction::Type::I_add:
                 {
                     ss << "    ;; ADD" << '\n';
                     ss << "    pop rax" << '\n';
@@ -41,7 +41,7 @@ namespace Bolt {
                     break;
                 }
 
-                case Instruction::Type::K_If:
+                case Instruction::Type::I_if:
                 {
                     
                     std::string else_label_name = "label_" + std::to_string(INS_SHARED_PTR_CAST(obj)->data_1());
@@ -53,7 +53,7 @@ namespace Bolt {
                     break;
                 }
 
-                case Instruction::Type::K_Else:
+                case Instruction::Type::I_else:
                 {
                     
                     std::string else_label_name = "label_" + std::to_string(INS_SHARED_PTR_CAST(obj)->data_1());
@@ -65,7 +65,7 @@ namespace Bolt {
                     break;
                 }
 
-                case Instruction::Type::K_EndIf:
+                case Instruction::Type::I_endIf:
                 {
                     
                     std::string endif_label_name = "label_" + std::to_string(INS_SHARED_PTR_CAST(obj)->data_1());

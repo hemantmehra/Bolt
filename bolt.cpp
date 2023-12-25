@@ -14,7 +14,7 @@ int main()
 
     std::shared_ptr<Bolt::Object> s1 = std::static_pointer_cast<Bolt::Object>(std::make_shared<Bolt::Scaler>(42));
     std::shared_ptr<Bolt::Object> s2 = std::static_pointer_cast<Bolt::Object>(std::make_shared<Bolt::Scaler>(33));
-    std::shared_ptr<Bolt::Object> sym = std::static_pointer_cast<Bolt::Object>(std::make_shared<Bolt::Instruction>(Bolt::Instruction::Type::OP_ADD));
+    std::shared_ptr<Bolt::Object> sym = std::static_pointer_cast<Bolt::Object>(std::make_shared<Bolt::Instruction>(Bolt::Instruction::Type::I_add));
 
     exp->append(sym);
     exp->append(s1);
@@ -31,7 +31,7 @@ int main()
     // std::cout << out_code << '\n';
 
     Bolt::Tokenizer tokenizer;
-    auto tokens = tokenizer.tokenize("(defun func) {(print 2) (ret 42)}");
+    auto tokens = tokenizer.tokenize("(defun func) {(if 2) (ret 42)}");
     Bolt::Parser parser;
     parser.parse(tokens);
     return 0;
