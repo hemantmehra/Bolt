@@ -11,4 +11,5 @@ add_executable(bolt bolt.cpp
                     LibBolt/Expression.cpp
                     LibBolt/Compiler.cpp
                     LibBolt/Instruction.cpp
+                    LibBolt/Tokenizer.cpp
 )
