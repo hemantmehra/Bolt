@@ -16,6 +16,8 @@ namespace Bolt {
 
     std::string Token::as_symbol_value() { return m_string_value; }
 
+    Instruction::Type Token::as_insturction_type() { return m_instruction_type; }
+
     std::string Token::to_string()
     {
         switch (m_type)

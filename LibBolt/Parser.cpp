@@ -71,6 +71,13 @@ namespace Bolt {
                 ptr->append(scaler_obj);
                 break;
             }
+
+            case Token::Type::Instruction:
+            {   
+                auto ins_obj = OBJECT_SHARED_PTR_CAST(std::make_shared<Instruction>(curr_token.as_insturction_type()));
+                ptr->append(ins_obj);
+                break;
+            }
             
             default:
                 break;

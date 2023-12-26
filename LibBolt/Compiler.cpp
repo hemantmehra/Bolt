@@ -2,13 +2,15 @@
 #include <sstream>
 #include <LibBolt/Compiler.h>
 
+// #define COMPILER_DEBUG
+
 namespace Bolt {
     int Compiler::generate_label_idx()
     {
         return m_label_idx++;
     }
 
-    std::string Compiler::compile(std::vector<std::shared_ptr<Object>> obj_list)
+    std::string Compiler::compile(std::shared_ptr<Object> obj_list)
     {
         m_label_idx = 0;
         std::stringstream ss;
@@ -109,19 +111,25 @@ namespace Bolt {
         }
     }
 
-    void Compiler::compiler_to_objects(std::vector<std::shared_ptr<Object>> obj_list)
+    void Compiler::compiler_to_objects(std::shared_ptr<Object> obj_list)
     {
-        auto it = obj_list.begin();
+        auto list = std::dynamic_pointer_cast<List>(obj_list);
+        size_t length = list->length();
+        int i = 0;
         bool compiled = false;
 
-        while (it != obj_list.end()) {
-            auto obj = *it;
-            if (obj->is_list()) {
-                auto exp = LIST_SHARED_PTR_CAST(obj);
-                if (exp->head()->to_string() == "if") {
-                    compiled = true;
-                }
-            }
+        while (i < length) {
+            auto obj = list->get(i);
+
+#ifdef COMPILER_DEBUG
+            std::cout << obj->to_string() << '\n';
+#endif
+            // if (obj->is_list()) {
+            //     auto exp = LIST_SHARED_PTR_CAST(obj);
+            //     if (exp->head()->to_string() == "if") {
+            //         compiled = true;
+            //     }
+            // }
 
             if (!compiled) eval(obj);
 
@@ -161,7 +169,8 @@ namespace Bolt {
             //     return;
             // }
 
-            it++;
+            // it++;
+            i++;
         }
     }
 }

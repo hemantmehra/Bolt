@@ -28,6 +28,7 @@ namespace Bolt {
         Type type() { return m_type; } 
         int as_scaler_value();
         std::string as_symbol_value();
+        Instruction::Type as_insturction_type();
         std::string to_string();
     
     private:

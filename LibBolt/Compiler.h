@@ -18,13 +18,13 @@ namespace Bolt {
     class Compiler
     {
     public:
-        std::string compile(std::vector<std::shared_ptr<Object>>);
+        std::string compile(std::shared_ptr<Object>);
         Compiler() : m_label_idx(0) {}
 
     private:
         int generate_label_idx();
         void eval(std::shared_ptr<Object>);
-        void compiler_to_objects(std::vector<std::shared_ptr<Object>>);
+        void compiler_to_objects(std::shared_ptr<Object>);
 
         std::vector<std::shared_ptr<Object>> m_object_list;
         int m_label_idx;
