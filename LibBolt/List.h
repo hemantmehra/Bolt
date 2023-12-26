@@ -18,10 +18,13 @@ namespace Bolt {
 
         List(Type);
         std::shared_ptr<Object> head();
+        std::shared_ptr<Object> rest();
         std::shared_ptr<Object> get(size_t);
         size_t length() { return m_obj_list.size(); }
         void append(std::shared_ptr<Object>);
         virtual bool is_list() const override { return true; }
+        virtual bool is_expression() const override { return m_type == Type::Expression; }
+        virtual bool is_block() const override { return m_type == Type::Block; }
         std::string to_string() override;
 
     private:

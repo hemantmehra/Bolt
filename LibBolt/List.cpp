@@ -11,6 +11,18 @@ namespace Bolt {
         return m_obj_list[0];
     }
 
+    std::shared_ptr<Object> List::rest()
+    {
+        CHECK(m_obj_list.size() > 1);
+        auto new_l = std::make_shared<List>(List::Type::Expression);
+
+        for (int i = 1; i < this->length(); i++) {
+            new_l->append(this->get(i));
+        }
+
+        return std::static_pointer_cast<Object>(new_l);
+    }
+
     std::shared_ptr<Object> List::get(size_t index)
     {
         CHECK(m_obj_list.size() > index);

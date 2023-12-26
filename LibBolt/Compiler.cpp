@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <LibBolt/Assertion.h>
 #include <LibBolt/Compiler.h>
 
 // #define COMPILER_DEBUG
@@ -15,7 +16,7 @@ namespace Bolt {
         m_label_idx = 0;
         std::stringstream ss;
         m_object_list.clear();
-        compiler_to_objects(obj_list);
+        compile_to_objects(obj_list);
 
         ss << "segment .text" << '\n';
         ss << "global _start" << '\n';
@@ -111,12 +112,11 @@ namespace Bolt {
         }
     }
 
-    void Compiler::compiler_to_objects(std::shared_ptr<Object> obj_list)
+    void Compiler::compile_to_objects(std::shared_ptr<Object> obj_list)
     {
         auto list = std::dynamic_pointer_cast<List>(obj_list);
         size_t length = list->length();
-        int i = 0;
-        bool compiled = false;
+        size_t i = 0;
 
         while (i < length) {
             auto obj = list->get(i);
@@ -124,14 +124,43 @@ namespace Bolt {
 #ifdef COMPILER_DEBUG
             std::cout << obj->to_string() << '\n';
 #endif
-            // if (obj->is_list()) {
-            //     auto exp = LIST_SHARED_PTR_CAST(obj);
-            //     if (exp->head()->to_string() == "if") {
-            //         compiled = true;
-            //     }
-            // }
+            if (obj->is_expression() && LIST_SHARED_PTR_CAST(obj)->head()->is_instruction()) {
+                auto head = LIST_SHARED_PTR_CAST(obj)->head();
+                auto ins_type = INS_SHARED_PTR_CAST(head)->type();
+                if (ins_type == Instruction::Type::I_if) {
+                    int else_label_idx = generate_label_idx();
+                    int endif_label_idx = generate_label_idx();
 
-            if (!compiled) eval(obj);
+                    CHECK(i+3 < length);
+                    auto if_body = list->get(i+1);
+                    auto else_exp = list->get(i+2);
+                    auto else_body = list->get(i+3);
+                    CHECK(if_body->is_block());
+                    CHECK(else_exp->is_expression());
+                    CHECK(else_body->is_block());
+
+                    auto ins_if = MAKE_INS2(Instruction::Type::I_if, else_label_idx);
+                    auto ins_else = MAKE_INS3(Instruction::Type::I_else, else_label_idx, endif_label_idx);
+                    auto ins_endif = MAKE_INS2(Instruction::Type::I_endIf, endif_label_idx);
+
+                    compile_to_objects(LIST_SHARED_PTR_CAST(obj)->rest());
+                    m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_if));
+                    compile_to_objects(list->get(i+1));
+                    m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_else));
+                    compile_to_objects(list->get(i+3));
+                    m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_endif));
+
+                    i += 3;
+                }
+
+                else {
+                    eval(obj);
+                }
+            }
+
+            else {
+                eval(obj);
+            }
 
             // else if (obj->is_cons()) {
             //     OBJECT_PTR car = NODE_CAR(obj);

@@ -30,7 +30,7 @@ int main()
 
 
     Bolt::Tokenizer tokenizer;
-    auto tokens = tokenizer.tokenize("(add 2 3) (add 4 5)");
+    auto tokens = tokenizer.tokenize("(if 1) {(add 1 2)} (else) {(add 3 4)}");
     Bolt::Parser parser;
     auto code = parser.parse(tokens);
     // std::cout << code->to_string() << '\n';
