@@ -8,33 +8,23 @@
 #include <LibBolt/Instruction.h>
 #include <LibBolt/Parser.h>
 
-int main()
+int main(int argc, char* argv[])
 {
-    // std::shared_ptr<Bolt::List> exp = std::make_shared<Bolt::List>(Bolt::List::Type::Expression);
+    if (argc < 2) {
+        std::cout << "Usage: bolt program.bolt" << '\n';
+        return 1;
+    }
 
-    // std::shared_ptr<Bolt::Object> s1 = std::static_pointer_cast<Bolt::Object>(std::make_shared<Bolt::Scaler>(42));
-    // std::shared_ptr<Bolt::Object> s2 = std::static_pointer_cast<Bolt::Object>(std::make_shared<Bolt::Scaler>(33));
-    // std::shared_ptr<Bolt::Object> sym = std::static_pointer_cast<Bolt::Object>(std::make_shared<Bolt::Instruction>(Bolt::Instruction::Type::I_add));
-
-    // exp->append(sym);
-    // exp->append(s1);
-    // exp->append(s2);
-
-    // std::cout << exp.to_string() << '\n';
-    // std::cout << exp.head()->to_string() << '\n';
-
-    Bolt::Compiler compiler;
-    // std::vector<std::shared_ptr<Bolt::Object>> code;
-    // code.push_back(std::static_pointer_cast<Bolt::Object>(exp));
-
-
+    std::string filename(argv[1]);
+    std::ifstream ifs(filename);
+    std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
 
     Bolt::Tokenizer tokenizer;
-    auto tokens = tokenizer.tokenize("(if 1) {(add 1 2)} (else) {(add 3 4)}");
     Bolt::Parser parser;
-    auto code = parser.parse(tokens);
-    // std::cout << code->to_string() << '\n';
+    Bolt::Compiler compiler;
 
+    auto tokens = tokenizer.tokenize(content);
+    auto code = parser.parse(tokens);
     std::string out_code = compiler.compile(code);
     std::cout << out_code << '\n';
 

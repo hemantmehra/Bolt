@@ -10,8 +10,8 @@ cmake -S . -Bbuild -GNinja
 ninja -C build/
 ```
 
-### Run
+### Compile a bolt program
 ```
-./build/bolt
+./build/bolt ./examples/01_add.bolt
 ```
 
