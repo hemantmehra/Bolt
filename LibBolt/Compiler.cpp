@@ -100,6 +100,13 @@ namespace Bolt {
                     break;
                 }
 
+                case Instruction::Type::I_drop:
+                {
+                    ss << "    ;; Drop" << '\n';
+                    ss << "    pop rax" << '\n';
+                    break;
+                }
+
                 case Instruction::Type::_INVALID:
                 {
                     ASSERT_NOT_REACHED();
@@ -221,6 +228,8 @@ namespace Bolt {
                 eval(obj);
             }
 
+            // auto ins_drop = MAKE_INS1(Instruction::Type::I_drop);
+            // m_object_list.push_back(ins_drop);
             i++;
         }
     }

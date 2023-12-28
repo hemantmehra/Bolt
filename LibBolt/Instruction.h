@@ -13,6 +13,7 @@
     __ENUMERATE_INSTRUCTION_TYPE(I_endIf) \
     __ENUMERATE_INSTRUCTION_TYPE(I_add) \
     __ENUMERATE_INSTRUCTION_TYPE(I_let) \
+    __ENUMERATE_INSTRUCTION_TYPE(I_drop) \
 
 namespace Bolt {
     class Instruction : public Object
