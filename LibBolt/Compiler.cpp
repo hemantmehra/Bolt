@@ -108,7 +108,6 @@ namespace Bolt {
                 }
             }
 
-            // ss << '\n';
         }
 
         // EXIT asm code
@@ -222,43 +221,6 @@ namespace Bolt {
                 eval(obj);
             }
 
-            // else if (obj->is_cons()) {
-            //     OBJECT_PTR car = NODE_CAR(obj);
-            //     if (car->is_symbol() && SYMBOL_PTR_CAST(car)->to_string() == "if") {
-            //         int else_label_idx = generate_label_idx();
-            //         int endif_label_idx = generate_label_idx();
-
-            //         auto if_type = LISP::PrimitiveProcedure::Type::If;
-            //         auto else_type = LISP::PrimitiveProcedure::Type::Else;
-            //         auto endif_type = LISP::PrimitiveProcedure::Type::EndIf;
-
-            //         auto p_if = MAKE_PRIMITVE_PROCEDURE2(if_type, else_label_idx);
-            //         auto p_else = MAKE_PRIMITVE_PROCEDURE3(else_type, else_label_idx, endif_label_idx);
-            //         auto p_endif = MAKE_PRIMITVE_PROCEDURE2(endif_type, endif_label_idx);
-
-            //         auto exp = NODE_CAR(NODE_CDR(obj));
-            //         auto if_block = NODE_CAR(NODE_CDR(NODE_CDR(obj)));
-            //         auto else_block = NODE_CAR(NODE_CDR(NODE_CDR(NODE_CDR(obj))));
-
-            //         eval(exp, env);
-            //         m_object_list.push_back(OBJECT_PTR_CAST(p_if));
-            //         eval(if_block, env);
-            //         m_object_list.push_back(OBJECT_PTR_CAST(p_else));
-            //         eval(else_block, env);
-            //         m_object_list.push_back(OBJECT_PTR_CAST(p_endif));
-            //     }
-            // }
-
-            // else {
-            //     CONS_PTR cons_obj = CONS_PTR_CAST(obj);
-            //     OBJECT_PTR proc = cons_obj->as_car();
-            //     OBJECT_PTR args = cons_obj->as_cdr();
-            //     eval_list(args, env);
-            //     eval(proc, env);
-            //     return;
-            // }
-
-            // it++;
             i++;
         }
     }
