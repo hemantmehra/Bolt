@@ -56,6 +56,24 @@ namespace Bolt {
                     break;
                 }
 
+                case Instruction::Type::I_inc:
+                {
+                    int offset = INS_SHARED_PTR_CAST(obj)->data_1();
+
+                    ss << "    ;; Inc" << '\n';
+                    ss << "    add QWORD [rbp-" << offset << "], 1" << '\n';
+                    break;
+                }
+
+                case Instruction::Type::I_dec:
+                {
+                    int offset = INS_SHARED_PTR_CAST(obj)->data_1();
+
+                    ss << "    ;; Dec" << '\n';
+                    ss << "    sub QWORD [rbp-" << offset << "], 1" << '\n';
+                    break;
+                }
+
                 case Instruction::Type::I_add:
                 {
                     ss << "    ;; ADD" << '\n';
@@ -214,6 +232,27 @@ namespace Bolt {
                     m_stack_offset += 4;
                     m_object_list.push_back(scaler);
                     m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_let));
+#ifdef COMPILER_DEBUG
+                    std::cout << "New Stack offset " << m_stack_offset << '\n';
+#endif
+                }
+
+                else if (ins_type == Instruction::Type::I_inc || ins_type == Instruction::Type::I_dec) {
+                    auto rest = LIST_SHARED_PTR_CAST(obj)->rest();
+                    CHECK(LIST_SHARED_PTR_CAST(rest)->length() > 0);
+
+                    auto symbol = LIST_SHARED_PTR_CAST(rest)->get(0);
+
+                    CHECK(symbol->is_symbol());
+#ifdef COMPILER_DEBUG
+                    std::cout << symbol->to_string() << '\n';
+#endif
+
+                    std::string s = SYM_SHARED_PTR_CAST(symbol)->to_string();
+                    int offset = m_symbol_stack_offset_map[s];
+
+                    auto ins_inc = MAKE_INS2(ins_type, offset);
+                    m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_inc));
 #ifdef COMPILER_DEBUG
                     std::cout << "New Stack offset " << m_stack_offset << '\n';
 #endif

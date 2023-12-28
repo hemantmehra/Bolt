@@ -1,2 +1,3 @@
 (let a 42)
 (add a 33)
+(dec a)
