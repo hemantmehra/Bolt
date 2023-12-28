@@ -84,6 +84,19 @@ namespace Bolt {
                     break;
                 }
 
+                case Instruction::Type::I_eq:
+                {
+                    ss << "    ;; EQ" << '\n';
+                    ss << "    mov rcx, 0" << '\n';
+                    ss << "    mov rdx, 1" << '\n';
+                    ss << "    pop rax" << '\n';
+                    ss << "    pop rbx" << '\n';
+                    ss << "    cmp rax, rbx" << '\n';
+                    ss << "    cmove rcx, rdx" << '\n';
+                    ss << "    push rcx" << '\n';
+                    break;
+                }
+
                 case Instruction::Type::I_if:
                 {
                     

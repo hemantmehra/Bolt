@@ -16,6 +16,7 @@
     __ENUMERATE_INSTRUCTION_TYPE(I_drop) \
     __ENUMERATE_INSTRUCTION_TYPE(I_inc) \
     __ENUMERATE_INSTRUCTION_TYPE(I_dec) \
+    __ENUMERATE_INSTRUCTION_TYPE(I_eq) \
 
 namespace Bolt {
     class Instruction : public Object
