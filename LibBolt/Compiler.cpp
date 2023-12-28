@@ -21,6 +21,9 @@ namespace Bolt {
         ss << "segment .text" << '\n';
         ss << "global _start" << '\n';
         ss << "_start:" << '\n';
+        ss << "    push rbp" << '\n';
+        ss << "    mov rbp, rsp" << '\n';
+        ss << "    sub rsp, " << m_stack_offset << '\n'; 
 
         for(auto obj: m_object_list) {
             // std::cout << obj->to_string() << '\n';
@@ -30,9 +33,28 @@ namespace Bolt {
                 ss << "    push " << SCALER_SHARED_PTR_CAST(obj)->as_integer() << '\n';
             }
 
+            else if (obj->is_scaler()) {
+                std::string s = SYM_SHARED_PTR_CAST(obj)->to_string();
+                int stack_offset = m_symbol_stack_offset_map[s];
+
+                ss << "    ;; push SYMBOL" << '\n';
+                ss << "    mov rax, QWORD [rbp-" << stack_offset << "]" << '\n';
+                ss << "    push rax" << '\n';
+            }
+
             else if (obj->is_instruction()) {
 
                 switch(INS_SHARED_PTR_CAST(obj)->type()) {
+                
+                case Instruction::Type::I_let:
+                {
+                    int offset = INS_SHARED_PTR_CAST(obj)->data_1();
+
+                    ss << "    ;; Init Symbol" << '\n';
+                    ss << "    pop rax" << '\n';
+                    ss << "    mov QWORD [rbp-" << offset << "], rax" << '\n';
+                    break;
+                }
 
                 case Instruction::Type::I_add:
                 {
@@ -77,6 +99,12 @@ namespace Bolt {
                     ss << endif_label_name << ":" << '\n';
                     break;
                 }
+
+                case Instruction::Type::_INVALID:
+                {
+                    ASSERT_NOT_REACHED();
+                    break;
+                }
                 }
             }
 
@@ -97,6 +125,11 @@ namespace Bolt {
     void Compiler::eval(std::shared_ptr<Object> obj)
     {
         if (obj->is_scaler()) {
+            m_object_list.push_back(obj);
+            return;
+        }
+
+        else if (obj->is_symbol()) {
             m_object_list.push_back(obj);
             return;
         }
@@ -151,6 +184,33 @@ namespace Bolt {
                     m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_endif));
 
                     i += 3;
+                }
+
+                else if (ins_type == Instruction::Type::I_let) {
+                    auto rest = LIST_SHARED_PTR_CAST(obj)->rest();
+                    CHECK(LIST_SHARED_PTR_CAST(rest)->length() > 1);
+
+                    auto symbol = LIST_SHARED_PTR_CAST(rest)->get(0);
+                    auto scaler = LIST_SHARED_PTR_CAST(rest)->get(1);
+
+                    CHECK(symbol->is_symbol());
+                    CHECK(scaler->is_scaler());
+#ifdef COMPILER_DEBUG
+                    std::cout << symbol->to_string() << '\n';
+                    std::cout << scaler->to_string() << '\n';
+#endif
+
+                    std::string s = SYM_SHARED_PTR_CAST(symbol)->to_string();
+                    int offset = m_stack_offset + 4;
+
+                    auto ins_let = MAKE_INS2(Instruction::Type::I_let, offset);
+                    m_symbol_stack_offset_map[s] = offset;
+                    m_stack_offset += 4;
+                    m_object_list.push_back(scaler);
+                    m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_let));
+#ifdef COMPILER_DEBUG
+                    std::cout << "New Stack offset " << m_stack_offset << '\n';
+#endif
                 }
 
                 else {
