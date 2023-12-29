@@ -5,4 +5,4 @@
     (inc b)
     (dec a)
 }
-(add b 1)
+(exit b)

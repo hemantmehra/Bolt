@@ -4,3 +4,4 @@
     (print a)
     (dec a)
 }
+(exit 42)

@@ -22,7 +22,8 @@
     __ENUMERATE_INSTRUCTION_TYPE(I_while) \
     __ENUMERATE_INSTRUCTION_TYPE(I_jump) \
     __ENUMERATE_INSTRUCTION_TYPE(I_label) \
-    __ENUMERATE_INSTRUCTION_TYPE(I_print)
+    __ENUMERATE_INSTRUCTION_TYPE(I_print) \
+    __ENUMERATE_INSTRUCTION_TYPE(I_exit) \
 
 namespace Bolt {
     class Instruction : public Object

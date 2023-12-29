@@ -86,6 +86,15 @@ namespace Bolt {
                     ss << "    call print" << '\n';
                     break;
                 }
+
+                case Instruction::Type::I_exit:
+                {
+                    ss << "    ;; EXIT" << '\n';
+                    ss << "    mov rax, 60" << '\n';
+                    ss << "    pop rdi" << '\n';
+                    ss << "    syscall" << '\n';
+                    break;
+                }
                 
                 case Instruction::Type::I_let:
                 {
@@ -250,7 +259,7 @@ namespace Bolt {
         // EXIT asm code
         ss << "    ;; EXIT" << '\n';
         ss << "    mov rax, 60" << '\n';
-        ss << "    pop rdi" << '\n';
+        ss << "    mov rdi, 0" << '\n';
         ss << "    syscall" << '\n';
 
         ss << '\n';
