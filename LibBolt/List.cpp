@@ -16,7 +16,7 @@ namespace Bolt {
         CHECK(m_obj_list.size() > 1);
         auto new_l = std::make_shared<List>(List::Type::Expression);
 
-        for (int i = 1; i < this->length(); i++) {
+        for (size_t i = 1; i < this->length(); i++) {
             new_l->append(this->get(i));
         }
 
