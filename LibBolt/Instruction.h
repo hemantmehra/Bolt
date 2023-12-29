@@ -17,6 +17,11 @@
     __ENUMERATE_INSTRUCTION_TYPE(I_inc) \
     __ENUMERATE_INSTRUCTION_TYPE(I_dec) \
     __ENUMERATE_INSTRUCTION_TYPE(I_eq) \
+    __ENUMERATE_INSTRUCTION_TYPE(I_lt) \
+    __ENUMERATE_INSTRUCTION_TYPE(I_gt) \
+    __ENUMERATE_INSTRUCTION_TYPE(I_while) \
+    __ENUMERATE_INSTRUCTION_TYPE(I_jump) \
+    __ENUMERATE_INSTRUCTION_TYPE(I_label)
 
 namespace Bolt {
     class Instruction : public Object
