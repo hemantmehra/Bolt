@@ -17,6 +17,10 @@ int main(int argc, char* argv[])
 
     std::string filename(argv[1]);
     std::ifstream ifs(filename);
+    if (ifs.fail()) {
+        std::cout << "File: \'" << filename << "\' does not exist" << '\n';
+        return 1;
+    }
     std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
 
     Bolt::Tokenizer tokenizer;
