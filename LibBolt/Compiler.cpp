@@ -20,6 +20,39 @@ namespace Bolt {
 
         ss << "segment .text" << '\n';
         ss << "global _start" << '\n';
+        ss << "print:\n";                              
+        ss << "    mov     r9, -3689348814741910323\n";
+        ss << "    sub     rsp, 40\n";                 
+        ss << "    mov     BYTE [rsp+31], 10\n";       
+        ss << "    lea     rcx, [rsp+30]\n";           
+        ss << ".L2:\n";                                
+        ss << "    mov     rax, rdi\n";                
+        ss << "    lea     r8, [rsp+32]\n";            
+        ss << "    mul     r9\n";                      
+        ss << "    mov     rax, rdi\n";                
+        ss << "    sub     r8, rcx\n";                 
+        ss << "    shr     rdx, 3\n";                  
+        ss << "    lea     rsi, [rdx+rdx*4]\n";        
+        ss << "    add     rsi, rsi\n";                
+        ss << "    sub     rax, rsi\n";                
+        ss << "    add     eax, 48\n";                 
+        ss << "    mov     BYTE [rcx], al\n";          
+        ss << "    mov     rax, rdi\n";                
+        ss << "    mov     rdi, rdx\n";                
+        ss << "    mov     rdx, rcx\n";                
+        ss << "    sub     rcx, 1\n";                  
+        ss << "    cmp     rax, 9\n";                  
+        ss << "    ja      .L2\n";                     
+        ss << "    lea     rax, [rsp+32]\n";           
+        ss << "    mov     edi, 1\n";                  
+        ss << "    sub     rdx, rax\n";                
+        ss << "    xor     eax, eax\n";                
+        ss << "    lea     rsi, [rsp+32+rdx]\n";       
+        ss << "    mov     rdx, r8\n";                 
+        ss << "    mov     rax, 1\n";                  
+        ss << "    syscall\n";                         
+        ss << "    add     rsp, 40\n";                 
+        ss << "    ret\n";      
         ss << "_start:" << '\n';
         ss << "    push rbp" << '\n';
         ss << "    mov rbp, rsp" << '\n';
@@ -45,6 +78,14 @@ namespace Bolt {
             else if (obj->is_instruction()) {
 
                 switch(INS_SHARED_PTR_CAST(obj)->type()) {
+
+                case Instruction::Type::I_print:
+                {
+                    ss << "    ;; print" << '\n';
+                    ss << "    pop rdi" << '\n';
+                    ss << "    call print" << '\n';
+                    break;
+                }
                 
                 case Instruction::Type::I_let:
                 {
