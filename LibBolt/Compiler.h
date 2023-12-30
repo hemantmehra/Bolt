@@ -13,6 +13,7 @@
 #define MAKE_INS1(x) std::make_shared<Bolt::Instruction>(x)
 #define MAKE_INS2(x, y) std::make_shared<Bolt::Instruction>(x, y)
 #define MAKE_INS3(x, y, z) std::make_shared<Bolt::Instruction>(x, y, z)
+#define MAKE_INS4(x, y, z, s) std::make_shared<Bolt::Instruction>(x, y, z, s)
 
 #define OBJECT_SHARED_PTR_CAST(x) std::static_pointer_cast<Object>(x)
 #define SCALER_SHARED_PTR_CAST(x) std::static_pointer_cast<Scaler>(x)

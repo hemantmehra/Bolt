@@ -28,12 +28,19 @@ namespace Bolt {
         m_label_idx = 0;
         std::stringstream ss;
         m_object_list.clear();
+        
         compile_to_objects(obj_list);
+
+        auto ins_prog_start = MAKE_INS2(Instruction::Type::__prog_start, 0);
+        auto ins_prog_end = MAKE_INS2(Instruction::Type::__prog_end, 0);
+        m_object_list.push_back(ins_prog_start);
+        m_object_list.push_back(ins_prog_end);
 
         ss << "segment .bss" << '\n';
         ss << "bss_mem: resb " << m_bss_offset << '\n';
         ss << "segment .text" << '\n';
         ss << "global _start" << '\n';
+
         ss << "print:\n";                              
         ss << "    mov     r9, -3689348814741910323\n";
         ss << "    sub     rsp, 40\n";                 
@@ -66,11 +73,7 @@ namespace Bolt {
         ss << "    mov     rax, 1\n";                  
         ss << "    syscall\n";                         
         ss << "    add     rsp, 40\n";                 
-        ss << "    ret\n";      
-        ss << "_start:" << '\n';
-        ss << "    push rbp" << '\n';
-        ss << "    mov rbp, rsp" << '\n';
-        ss << "    sub rsp, " << m_stack_offset << '\n'; 
+        ss << "    ret\n";
 
         for(auto obj: m_object_list) {
             // std::cout << obj->to_string() << '\n';
@@ -103,6 +106,26 @@ namespace Bolt {
 
                 switch(INS_SHARED_PTR_CAST(obj)->type()) {
 
+                case Instruction::Type::__prog_start:
+                {
+                    ss << "_start:" << '\n';
+                    // ss << "    push rbp" << '\n';
+                    // ss << "    mov rbp, rsp" << '\n';
+                    // ss << "    sub rsp, " << m_stack_offset << '\n';
+                    ss << "    call main" << "\n";
+                    break;
+                }
+
+                case Instruction::Type::__prog_end:
+                {
+                    ss << "    ;; EXIT" << '\n';
+                    ss << "    mov rax, 60" << '\n';
+                    ss << "    mov rdi, 0" << '\n';
+                    ss << "    syscall" << '\n';
+                    ss << ";; ----------" << '\n';
+                    break;
+                }
+
                 case Instruction::Type::I_print:
                 {
                     ss << "    ;; print" << '\n';
@@ -131,7 +154,14 @@ namespace Bolt {
                 }
 
                 case Instruction::Type::I_global:
+                case Instruction::Type::I_defun:
                 {
+                    break;
+                }
+
+                case Instruction::Type::__call:
+                {
+                    NOT_IMPLEMENTED();
                     break;
                 }
 
@@ -212,17 +242,21 @@ namespace Bolt {
                     break;
                 }
 
-                case Instruction::Type::I_label:
+                case Instruction::Type::__label:
                 {
-                    
                     std::string label = "label_" + std::to_string(INS_SHARED_PTR_CAST(obj)->data_1());
+                    std::string label_name = INS_SHARED_PTR_CAST(obj)->data_str();
 
                     ss << "    ;; label" << '\n';
-                    ss << label << ":" << '\n';
+
+                    if (label_name.length())
+                        ss << label_name << ":" << '\n';
+                    else
+                        ss << label << ":" << '\n';
                     break;
                 }
 
-                case Instruction::Type::I_jump:
+                case Instruction::Type::__jump:
                 {
                     
                     std::string label = "label_" + std::to_string(INS_SHARED_PTR_CAST(obj)->data_1());
@@ -268,7 +302,7 @@ namespace Bolt {
                     break;
                 }
 
-                case Instruction::Type::I_endIf:
+                case Instruction::Type::__endIf:
                 {
                     
                     std::string endif_label_name = "label_" + std::to_string(INS_SHARED_PTR_CAST(obj)->data_1());
@@ -278,10 +312,30 @@ namespace Bolt {
                     break;
                 }
 
-                case Instruction::Type::I_drop:
+                case Instruction::Type::__drop:
                 {
                     ss << "    ;; Drop" << '\n';
                     ss << "    pop rax" << '\n';
+                    break;
+                }
+
+                case Instruction::Type::__func_start:
+                {
+                    int offset = INS_SHARED_PTR_CAST(obj)->data_1();
+                    ss << "    ;; Func Start" << '\n';
+                    ss << "    push rbp" << '\n';
+                    ss << "    mov rbp, rsp" << '\n';
+                    ss << "    sub rsp, " << offset << "\n";
+                    break;
+                }
+
+                case Instruction::Type::__func_end:
+                {
+                    int offset = INS_SHARED_PTR_CAST(obj)->data_1();
+                    ss << "    ;; Func End" << '\n';
+                    ss << "    pop rbp" << '\n';
+                    ss << "    add rsp, " << offset << "\n";
+                    ss << "    ret" << '\n';
                     break;
                 }
 
@@ -294,14 +348,6 @@ namespace Bolt {
             }
 
         }
-
-        // EXIT asm code
-        ss << "    ;; EXIT" << '\n';
-        ss << "    mov rax, 60" << '\n';
-        ss << "    mov rdi, 0" << '\n';
-        ss << "    syscall" << '\n';
-
-        ss << '\n';
 
         return ss.str();
     }
@@ -358,7 +404,7 @@ namespace Bolt {
 
                     auto ins_if = MAKE_INS2(Instruction::Type::I_if, else_label_idx);
                     auto ins_else = MAKE_INS3(Instruction::Type::I_else, else_label_idx, endif_label_idx);
-                    auto ins_endif = MAKE_INS2(Instruction::Type::I_endIf, endif_label_idx);
+                    auto ins_endif = MAKE_INS2(Instruction::Type::__endIf, endif_label_idx);
 
                     compile_to_objects(LIST_SHARED_PTR_CAST(obj)->rest());
                     m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_if));
@@ -378,9 +424,9 @@ namespace Bolt {
                     auto while_body = list->get(i+1);
                     CHECK(while_body->is_block());
 
-                    auto ins_jump = MAKE_INS2(Instruction::Type::I_jump, while_cond_label_idx);
-                    auto ins_label_body = MAKE_INS2(Instruction::Type::I_label, while_body_label_idx);
-                    auto ins_label_cond = MAKE_INS2(Instruction::Type::I_label, while_cond_label_idx);
+                    auto ins_jump = MAKE_INS2(Instruction::Type::__jump, while_cond_label_idx);
+                    auto ins_label_body = MAKE_INS2(Instruction::Type::__label, while_body_label_idx);
+                    auto ins_label_cond = MAKE_INS2(Instruction::Type::__label, while_cond_label_idx);
                     auto ins_while = MAKE_INS2(Instruction::Type::I_while, while_body_label_idx);
 
                     m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_jump));
@@ -389,6 +435,30 @@ namespace Bolt {
                     m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_label_cond));
                     compile_to_objects(LIST_SHARED_PTR_CAST(obj)->rest());
                     m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_while));
+
+                    i++;
+                }
+
+                else if (ins_type == Instruction::Type::I_defun) {
+                    // int defun_label_idx = generate_label_idx();
+                    
+                    auto rest = LIST_SHARED_PTR_CAST(obj)->rest();
+                    CHECK(LIST_SHARED_PTR_CAST(rest)->length() > 0);
+                    auto symbol = LIST_SHARED_PTR_CAST(rest)->get(0);
+
+                    CHECK(i+1 < length);
+
+                    auto defun_body = list->get(i+1);
+                    CHECK(defun_body->is_block());
+
+                    auto ins_label = MAKE_INS4(Instruction::Type::__label, 0, 0, symbol->to_string());
+                    auto ins_func_start = MAKE_INS2(Instruction::Type::__func_start, 0);
+                    auto ins_func_end = MAKE_INS2(Instruction::Type::__func_end, 0);
+
+                    m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_label));
+                    m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_func_start));
+                    compile_to_objects(list->get(i+1));
+                    m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_func_end));
 
                     i++;
                 }
@@ -483,7 +553,7 @@ namespace Bolt {
                 eval(obj);
             }
 
-            // auto ins_drop = MAKE_INS1(Instruction::Type::I_drop);
+            // auto ins_drop = MAKE_INS1(Instruction::Type::__drop);
             // m_object_list.push_back(ins_drop);
             i++;
         }
