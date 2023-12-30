@@ -1,6 +1,19 @@
 # Bolt
 
-An experimental programming language which compiles to x86_64 assembly code. The syntax is inspired from LISP S-Expression.
+A x86_64 assembly compiler for an experimental programming language. The syntax is inspired from LISP S-Expression.
+
+1. Simple Expression
+```
+(add 3 4)
+```
+
+2. Expression with block
+```
+(while a)
+{
+    (dec a)
+}
+```
 
 ## Build and Run
 
@@ -12,7 +25,7 @@ ninja -C build/
 
 ### Compile a bolt program
 ```
-./build/bolt ./examples/01_add.bolt
+./build/bolt ./examples/07_func2.bolt
 ```
 
 ## Example
@@ -20,35 +33,25 @@ ninja -C build/
 ### Code
 example.bolt
 ```
-(let a 10)
-(while a)
+(defun main)
 {
+    (let a 42)
+    (inc a)
     (print a)
-    (dec a)
 }
-(exit 42)
 ```
 ### Compile to assembly
 ```
-$ ./build/bolt example.bolt > output.asm
+$ ./build/bolt example.bolt
 ```
 
 ### Build and Run
 ```
 $ ./make.sh
-10
-9
-8
-7
-6
-5
-4
-3
-2
-1
+43
 ```
 
 ```
 $ echo $?
-42
+0
 ```
