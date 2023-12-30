@@ -25,18 +25,22 @@ namespace Bolt {
     {
     public:
         std::string compile(std::shared_ptr<Object>);
-        Compiler() : m_label_idx(0), m_stack_offset(0) {}
+        Compiler() : m_label_idx(0), m_stack_offset(0), m_bss_offset(0) {}
 
     private:
         int generate_label_idx();
         void eval(std::shared_ptr<Object>);
         void compile_to_objects(std::shared_ptr<Object>);
+        int get_symbol_stack_offset(std::string);
+        int get_symbol_bss_offset(std::string);
 
         std::vector<std::shared_ptr<Object>> m_object_list;
         int m_label_idx;
         int m_stack_offset;
+        int m_bss_offset;
 
         std::unordered_map<std::string, int> m_symbol_stack_offset_map;
+        std::unordered_map<std::string, int> m_symbol_bss_offset_map;
     };
 }
 

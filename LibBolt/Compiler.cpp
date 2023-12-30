@@ -11,6 +11,18 @@ namespace Bolt {
         return m_label_idx++;
     }
 
+    int Compiler::get_symbol_stack_offset(std::string s)
+    {
+        if(m_symbol_stack_offset_map.find(s) == m_symbol_stack_offset_map.end()) return -1;
+        return m_symbol_stack_offset_map[s];
+    }
+
+    int Compiler::get_symbol_bss_offset(std::string s)
+    {
+        if(m_symbol_bss_offset_map.find(s) == m_symbol_bss_offset_map.end()) return -1;
+        return m_symbol_bss_offset_map[s];
+    }
+
     std::string Compiler::compile(std::shared_ptr<Object> obj_list)
     {
         m_label_idx = 0;
@@ -18,6 +30,8 @@ namespace Bolt {
         m_object_list.clear();
         compile_to_objects(obj_list);
 
+        ss << "segment .bss" << '\n';
+        ss << "bss_mem: resb " << m_bss_offset << '\n';
         ss << "segment .text" << '\n';
         ss << "global _start" << '\n';
         ss << "print:\n";                              
@@ -68,10 +82,20 @@ namespace Bolt {
 
             else if (obj->is_symbol()) {
                 std::string s = SYM_SHARED_PTR_CAST(obj)->to_string();
-                int stack_offset = m_symbol_stack_offset_map[s];
+                int stack_offset = get_symbol_stack_offset(s);
+                int bss_offset = get_symbol_bss_offset(s);
+                if (stack_offset == -1 && bss_offset == -1) {
+                    std::cerr << "Undefined variable: " << s << '\n';
+                    exit(1);
+                }
 
                 ss << "    ;; push SYMBOL" << '\n';
-                ss << "    mov rax, QWORD [rbp-" << stack_offset << "]" << '\n';
+                if (stack_offset != -1) {
+                    ss << "    mov rax, QWORD [rbp-" << stack_offset << "]" << '\n';
+                }
+                else {
+                    ss << "    mov rax, QWORD [bss_mem+" << bss_offset << "]" << '\n';
+                }
                 ss << "    push rax" << '\n';
             }
 
@@ -106,21 +130,36 @@ namespace Bolt {
                     break;
                 }
 
+                case Instruction::Type::I_global:
+                {
+                    break;
+                }
+
                 case Instruction::Type::I_inc:
                 {
                     int offset = INS_SHARED_PTR_CAST(obj)->data_1();
+                    int offset_type = INS_SHARED_PTR_CAST(obj)->data_2();
 
                     ss << "    ;; Inc" << '\n';
-                    ss << "    add QWORD [rbp-" << offset << "], 1" << '\n';
+
+                    if (offset_type)
+                        ss << "    add QWORD [bss_mem+" << offset << "], 1" << '\n';
+                    else
+                        ss << "    add QWORD [rbp-" << offset << "], 1" << '\n';
                     break;
                 }
 
                 case Instruction::Type::I_dec:
                 {
                     int offset = INS_SHARED_PTR_CAST(obj)->data_1();
+                    int offset_type = INS_SHARED_PTR_CAST(obj)->data_2();
 
                     ss << "    ;; Dec" << '\n';
-                    ss << "    sub QWORD [rbp-" << offset << "], 1" << '\n';
+
+                    if (offset_type)
+                        ss << "    sub QWORD [bss_mem+" << offset << "], 1" << '\n';
+                    else
+                        ss << "    sub QWORD [rbp-" << offset << "], 1" << '\n';
                     break;
                 }
 
@@ -369,7 +408,7 @@ namespace Bolt {
 #endif
 
                     std::string s = SYM_SHARED_PTR_CAST(symbol)->to_string();
-                    int offset = m_stack_offset + 4;
+                    int offset = m_stack_offset + 8;
 
                     auto ins_let = MAKE_INS2(Instruction::Type::I_let, offset);
                     m_symbol_stack_offset_map[s] = offset;
@@ -378,6 +417,27 @@ namespace Bolt {
                     m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_let));
 #ifdef COMPILER_DEBUG
                     std::cout << "New Stack offset " << m_stack_offset << '\n';
+#endif
+                }
+
+                else if (ins_type == Instruction::Type::I_global) {
+                    auto rest = LIST_SHARED_PTR_CAST(obj)->rest();
+                    CHECK(LIST_SHARED_PTR_CAST(rest)->length() > 0);
+
+                    auto symbol = LIST_SHARED_PTR_CAST(rest)->get(0);
+
+                    CHECK(symbol->is_symbol());
+#ifdef COMPILER_DEBUG
+                    std::cout << symbol->to_string() << '\n';
+#endif
+
+                    std::string s = SYM_SHARED_PTR_CAST(symbol)->to_string();
+                    auto ins_let = MAKE_INS2(Instruction::Type::I_global, m_bss_offset);
+                    m_symbol_bss_offset_map[s] = m_bss_offset;
+                    m_bss_offset += 8;
+                    m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_let));
+#ifdef COMPILER_DEBUG
+                    std::cout << "New Stack offset " << m_bss_offset << '\n';
 #endif
                 }
 
@@ -393,12 +453,24 @@ namespace Bolt {
 #endif
 
                     std::string s = SYM_SHARED_PTR_CAST(symbol)->to_string();
-                    int offset = m_symbol_stack_offset_map[s];
+                    int offset = get_symbol_stack_offset(s);
+                    int bss_offset = get_symbol_bss_offset(s);
+                    if (offset == -1 && bss_offset == -1) {
+                        std::cerr << "Undefined variable: " << s << '\n';
+                        exit(1);
+                    }
 
-                    auto ins_inc = MAKE_INS2(ins_type, offset);
-                    m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_inc));
+                    if (offset != -1) {
+                        auto ins_inc = MAKE_INS3(ins_type, offset, 0);
+                        m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_inc));
+                    }
+
+                    else {
+                        auto ins_inc = MAKE_INS3(ins_type, bss_offset, 1);
+                        m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_inc));
+                    }
 #ifdef COMPILER_DEBUG
-                    std::cout << "New Stack offset " << m_stack_offset << '\n';
+                    std::cout << "New offset " << offset << '\n';
 #endif
                 }
 

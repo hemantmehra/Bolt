@@ -1,0 +1,5 @@
+(let a 42)
+(global b)
+(inc b)
+(print a)
+(print b)
