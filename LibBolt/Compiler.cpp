@@ -13,8 +13,7 @@ namespace Bolt {
 
     int Compiler::get_symbol_stack_offset(std::string s)
     {
-        if(m_symbol_stack_offset_map.find(s) == m_symbol_stack_offset_map.end()) return -1;
-        return m_symbol_stack_offset_map[s];
+        return m_current_function->get_offset(s);
     }
 
     int Compiler::get_symbol_bss_offset(std::string s)
@@ -76,7 +75,6 @@ namespace Bolt {
         ss << "    ret\n";
 
         for(auto obj: m_object_list) {
-            // std::cout << obj->to_string() << '\n';
 
             if (obj->is_scaler()) {
                 ss << "    ;; push SCALER" << '\n';
@@ -109,9 +107,6 @@ namespace Bolt {
                 case Instruction::Type::__prog_start:
                 {
                     ss << "_start:" << '\n';
-                    // ss << "    push rbp" << '\n';
-                    // ss << "    mov rbp, rsp" << '\n';
-                    // ss << "    sub rsp, " << m_stack_offset << '\n';
                     ss << "    call main" << "\n";
                     break;
                 }
@@ -321,7 +316,7 @@ namespace Bolt {
 
                 case Instruction::Type::__func_start:
                 {
-                    int offset = INS_SHARED_PTR_CAST(obj)->data_1();
+                    size_t offset = m_current_function->get_current_offset();
                     ss << "    ;; Func Start" << '\n';
                     ss << "    push rbp" << '\n';
                     ss << "    mov rbp, rsp" << '\n';
@@ -331,7 +326,7 @@ namespace Bolt {
 
                 case Instruction::Type::__func_end:
                 {
-                    int offset = INS_SHARED_PTR_CAST(obj)->data_1();
+                    size_t offset = m_current_function->get_current_offset();
                     ss << "    ;; Func End" << '\n';
                     ss << "    pop rbp" << '\n';
                     ss << "    add rsp, " << offset << "\n";
@@ -441,6 +436,7 @@ namespace Bolt {
 
                 else if (ins_type == Instruction::Type::I_defun) {
                     // int defun_label_idx = generate_label_idx();
+                    m_current_function = std::make_shared<Function>();
                     
                     auto rest = LIST_SHARED_PTR_CAST(obj)->rest();
                     CHECK(LIST_SHARED_PTR_CAST(rest)->length() > 0);
@@ -451,6 +447,7 @@ namespace Bolt {
                     auto defun_body = list->get(i+1);
                     CHECK(defun_body->is_block());
 
+                    m_func_names.push_back(symbol->to_string());
                     auto ins_label = MAKE_INS4(Instruction::Type::__label, 0, 0, symbol->to_string());
                     auto ins_func_start = MAKE_INS2(Instruction::Type::__func_start, 0);
                     auto ins_func_end = MAKE_INS2(Instruction::Type::__func_end, 0);
@@ -478,11 +475,8 @@ namespace Bolt {
 #endif
 
                     std::string s = SYM_SHARED_PTR_CAST(symbol)->to_string();
-                    int offset = m_stack_offset + 8;
-
-                    auto ins_let = MAKE_INS2(Instruction::Type::I_let, offset);
-                    m_symbol_stack_offset_map[s] = offset;
-                    m_stack_offset += 8;
+                    auto ins_let = MAKE_INS2(Instruction::Type::I_let, m_current_function->get_current_offset());
+                    m_current_function->set_offset(s, 8);
                     m_object_list.push_back(scaler);
                     m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_let));
 #ifdef COMPILER_DEBUG
@@ -553,8 +547,6 @@ namespace Bolt {
                 eval(obj);
             }
 
-            // auto ins_drop = MAKE_INS1(Instruction::Type::__drop);
-            // m_object_list.push_back(ins_drop);
             i++;
         }
     }

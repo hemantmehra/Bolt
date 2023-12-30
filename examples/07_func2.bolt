@@ -1,0 +1,6 @@
+(defun main)
+{
+    (let a 42)
+    (inc a)
+    (print a)
+}

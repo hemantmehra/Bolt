@@ -8,6 +8,7 @@
 #include <LibBolt/Symbol.h>
 #include <LibBolt/List.h>
 #include <LibBolt/Instruction.h>
+#include <LibBolt/Function.h>
 
 #define OBJECT_SHARED_PTR std::shared_ptr<Bolt::Object>
 #define MAKE_INS1(x) std::make_shared<Bolt::Instruction>(x)
@@ -26,7 +27,7 @@ namespace Bolt {
     {
     public:
         std::string compile(std::shared_ptr<Object>);
-        Compiler() : m_label_idx(0), m_stack_offset(0), m_bss_offset(0) {}
+        Compiler() : m_label_idx(0), m_stack_offset(0), m_bss_offset(0), m_current_function(nullptr) {}
 
     private:
         int generate_label_idx();
@@ -40,8 +41,10 @@ namespace Bolt {
         int m_stack_offset;
         int m_bss_offset;
 
-        std::unordered_map<std::string, int> m_symbol_stack_offset_map;
         std::unordered_map<std::string, int> m_symbol_bss_offset_map;
+
+        std::vector<std::string> m_func_names;
+        std::shared_ptr<Function> m_current_function;
     };
 }
 

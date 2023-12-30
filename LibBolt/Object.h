@@ -16,6 +16,7 @@ namespace Bolt {
         virtual bool is_expression() const { return false; }
         virtual bool is_block() const { return false; }
         virtual bool is_instruction() const { return false; }
+        virtual bool is_function() const { return false; }
 
         virtual std::string to_string() = 0;
     };
