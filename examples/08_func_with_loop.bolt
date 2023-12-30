@@ -1,0 +1,9 @@
+(defun main)
+{
+    (let a 10)
+    (while a)
+    {
+        (print a)
+        (dec a)
+    }
+}

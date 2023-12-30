@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 #include <LibBolt/Assertion.h>
 #include <LibBolt/Compiler.h>
 
@@ -76,6 +77,9 @@ namespace Bolt {
 
         for(auto obj: m_object_list) {
 
+#ifdef COMPILER_DEBUG
+            std::cout << "{{ " << obj->to_string() << " }}" << '\n';
+#endif
             if (obj->is_scaler()) {
                 ss << "    ;; push SCALER" << '\n';
                 ss << "    push " << SCALER_SHARED_PTR_CAST(obj)->as_integer() << '\n';
@@ -83,10 +87,20 @@ namespace Bolt {
 
             else if (obj->is_symbol()) {
                 std::string s = SYM_SHARED_PTR_CAST(obj)->to_string();
+
+                if (std::find(m_func_names.begin(), m_func_names.end(), s) != m_func_names.end())
+                {
+                    ss << "    ;; Function call" << '\n';
+                    ss << "    call " << s << '\n';
+                    continue;
+                }
+
                 int stack_offset = get_symbol_stack_offset(s);
                 int bss_offset = get_symbol_bss_offset(s);
                 if (stack_offset == -1 && bss_offset == -1) {
                     std::cerr << "Undefined variable: " << s << '\n';
+                    std::cerr << "Current Function data" << "\n";
+                    std::cerr << m_current_function->to_string();
                     exit(1);
                 }
 
@@ -100,6 +114,10 @@ namespace Bolt {
                 ss << "    push rax" << '\n';
             }
 
+            else if (obj->is_function()) {
+                m_current_function = std::dynamic_pointer_cast<Function>(obj);
+            }
+            
             else if (obj->is_instruction()) {
 
                 switch(INS_SHARED_PTR_CAST(obj)->type()) {
@@ -437,6 +455,7 @@ namespace Bolt {
                 else if (ins_type == Instruction::Type::I_defun) {
                     // int defun_label_idx = generate_label_idx();
                     m_current_function = std::make_shared<Function>();
+                    m_object_list.push_back(std::static_pointer_cast<Object>(m_current_function));
                     
                     auto rest = LIST_SHARED_PTR_CAST(obj)->rest();
                     CHECK(LIST_SHARED_PTR_CAST(rest)->length() > 0);
@@ -470,13 +489,16 @@ namespace Bolt {
                     CHECK(symbol->is_symbol());
                     CHECK(scaler->is_scaler());
 #ifdef COMPILER_DEBUG
-                    std::cout << symbol->to_string() << '\n';
-                    std::cout << scaler->to_string() << '\n';
+                    std::cout << "Let Sym: "<< symbol->to_string() << '\n';
+                    std::cout << "Let Scaler: "<< scaler->to_string() << '\n';
 #endif
 
                     std::string s = SYM_SHARED_PTR_CAST(symbol)->to_string();
                     auto ins_let = MAKE_INS2(Instruction::Type::I_let, m_current_function->get_current_offset());
                     m_current_function->set_offset(s, 8);
+#ifdef COMPILER_DEBUG
+                    std::cout << m_current_function->to_string() << '\n';
+#endif
                     m_object_list.push_back(scaler);
                     m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_let));
 #ifdef COMPILER_DEBUG
@@ -541,6 +563,10 @@ namespace Bolt {
                 else {
                     eval(obj);
                 }
+            }
+
+            else if (obj->is_expression()) {
+                eval(LIST_SHARED_PTR_CAST(obj)->head());
             }
 
             else {

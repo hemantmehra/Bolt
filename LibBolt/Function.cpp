@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <LibBolt/Function.h>
 
 // #define FUNC_DEBUG
@@ -35,6 +36,12 @@ namespace Bolt {
 
     std::string Function::to_string()
     {
-        return "[Function]";
+        std::stringstream ss;
+        ss << "[Function]\n";
+        for(auto p: m_sym_offset_map) {
+            ss << p.first << ": " << p.second << "\n";
+        }
+        ss << "[End]\n";
+        return ss.str();
     }
 }

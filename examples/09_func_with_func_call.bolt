@@ -1,0 +1,14 @@
+(defun demo)
+{
+    (let a 5)
+    (while a)
+    {
+        (print a)
+        (dec a)
+    }
+}
+
+(defun main)
+{
+    (demo)
+}
