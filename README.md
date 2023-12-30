@@ -1,6 +1,6 @@
 # Bolt
 
-A new programming language implemented in C++
+An experimental programming language which compiles to x86_64 assembly code. The syntax is inspired from LISP S-Expression.
 
 ## Build and Run
 
@@ -27,12 +27,10 @@ example.bolt
     (dec a)
 }
 (exit 42)
-
 ```
 ### Compile to assembly
 ```
 $ ./build/bolt example.bolt > output.asm
-
 ```
 
 ### Build and Run
