@@ -166,6 +166,31 @@ namespace Bolt {
                     break;
                 }
 
+                case Instruction::Type::I_set:
+                {
+                    std::string s = INS_SHARED_PTR_CAST(obj)->data_str();
+
+                    int stack_offset = get_symbol_stack_offset(s);
+                    int bss_offset = get_symbol_bss_offset(s);
+                    if (stack_offset == -1 && bss_offset == -1) {
+                        std::cerr << "Undefined variable: " << s << '\n';
+                        std::cerr << "Current Function data" << "\n";
+                        std::cerr << m_current_function->to_string();
+                        exit(1);
+                    }
+
+                    ss << "    ;; Set Symbol" << '\n';
+                    ss << "    pop rax" << '\n';
+                    if (stack_offset != -1) {
+                        ss << "    mov BYTE [rbp-" << stack_offset << "], al" << '\n';
+                    }
+                    else {
+                        ss << "    mov BYTE [bss_mem+" << bss_offset << "], al" << '\n';
+                    }
+
+                    break;
+                }
+
                 case Instruction::Type::I_global:
                 case Instruction::Type::I_defun:
                 {
@@ -501,6 +526,32 @@ namespace Bolt {
 #endif
                     m_object_list.push_back(scaler);
                     m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_let));
+#ifdef COMPILER_DEBUG
+                    std::cout << "New Stack offset " << m_stack_offset << '\n';
+#endif
+                }
+ 
+                else if (ins_type == Instruction::Type::I_set) {
+                    auto rest = LIST_SHARED_PTR_CAST(obj)->rest();
+                    CHECK(LIST_SHARED_PTR_CAST(rest)->length() > 1);
+
+                    auto symbol = LIST_SHARED_PTR_CAST(rest)->get(0);
+                    auto scaler = LIST_SHARED_PTR_CAST(rest)->get(1);
+
+                    CHECK(symbol->is_symbol());
+                    CHECK(scaler->is_scaler() || scaler->is_expression());
+#ifdef COMPILER_DEBUG
+                    std::cout << "Let Sym: "<< symbol->to_string() << '\n';
+                    std::cout << "Let Scaler: "<< scaler->to_string() << '\n';
+#endif
+
+                    std::string s = SYM_SHARED_PTR_CAST(symbol)->to_string();
+                    auto ins_set = MAKE_INS4(Instruction::Type::I_set, 0, 0, s);
+#ifdef COMPILER_DEBUG
+                    std::cout << m_current_function->to_string() << '\n';
+#endif
+                    m_object_list.push_back(scaler);
+                    m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_set));
 #ifdef COMPILER_DEBUG
                     std::cout << "New Stack offset " << m_stack_offset << '\n';
 #endif

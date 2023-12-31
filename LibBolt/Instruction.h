@@ -31,6 +31,7 @@
     __ENUMERATE_INSTRUCTION_TYPE(__func_end) \
     __ENUMERATE_INSTRUCTION_TYPE(__prog_start) \
     __ENUMERATE_INSTRUCTION_TYPE(__prog_end) \
+    __ENUMERATE_INSTRUCTION_TYPE(I_set)
 
 namespace Bolt {
     class Instruction : public Object

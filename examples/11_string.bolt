@@ -1,0 +1,14 @@
+(defun main)
+{
+    (global a)
+    (global b)
+    (global c)
+
+    (set a 65)
+    (set b 66)
+    (set c 67)
+
+    (print a)
+    (print b)
+    (print c)
+}
