@@ -19,6 +19,7 @@ namespace Bolt {
             Symbol,
             Scaler,
             Instruction,
+            String
         };
 
         Token(Type);

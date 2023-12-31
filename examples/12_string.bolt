@@ -1,0 +1,4 @@
+(defun main)
+{
+    (let a "Hello")
+}

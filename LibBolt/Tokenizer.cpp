@@ -43,6 +43,9 @@ namespace Bolt {
         case Type::Instruction:
             return "[Token] instruction";
             break;
+        case Type::String:
+            return "[Token] \"" + as_symbol_value() + "\"";
+            break;
         default:
             break;
         }
@@ -53,11 +56,30 @@ namespace Bolt {
     {
         std::vector<std::string> words;
         std::string current_word = "";
+        bool inside_str = false;
 
         auto it = code.begin();
         while (it != code.end())
         {
-            if (std::isspace(*it) && current_word.length() != 0) {
+            if (*it == '\"' && inside_str == false) {
+                inside_str = true;
+                if (current_word.length() > 0) words.push_back(current_word);
+                words.push_back("str\"");
+                current_word = "";
+            }
+
+            else if (*it == '\"' && inside_str == true) {
+                inside_str = false;
+                words.push_back(current_word);
+                words.push_back("\"str");
+                current_word = "";
+            }
+
+            else if (inside_str) {
+                current_word += *it;
+            }
+
+            else if (std::isspace(*it) && current_word.length() != 0) {
                 words.push_back(current_word);
                 current_word = "";
             }
@@ -112,9 +134,24 @@ namespace Bolt {
     {
         std::vector<Token> tokens;
         std::vector<std::string> words = split_to_words(code);
+        bool inside_str = false;
 
         for(auto it: words) {
-            if (it == "(") {
+            if (it == "str\"") {
+                inside_str = true;
+                continue;
+            }
+
+            else if (it == "\"str") {
+                inside_str = false;
+                continue;
+            }
+
+            else if (inside_str) {
+                tokens.push_back(Token(Token::Type::String, it));
+            }
+
+            else if (it == "(") {
                 tokens.push_back(Token(Token::Type::Begin_Exp));
             }
 
