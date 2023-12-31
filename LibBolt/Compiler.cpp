@@ -106,10 +106,10 @@ namespace Bolt {
 
                 ss << "    ;; push SYMBOL" << '\n';
                 if (stack_offset != -1) {
-                    ss << "    mov rax, QWORD [rbp-" << stack_offset << "]" << '\n';
+                    ss << "    movsx eax, BYTE [rbp-" << stack_offset << "]" << '\n';
                 }
                 else {
-                    ss << "    mov rax, QWORD [bss_mem+" << bss_offset << "]" << '\n';
+                    ss << "    movsx eax, BYTE [bss_mem+" << bss_offset << "]" << '\n';
                 }
                 ss << "    push rax" << '\n';
             }
@@ -162,7 +162,7 @@ namespace Bolt {
 
                     ss << "    ;; Init Symbol" << '\n';
                     ss << "    pop rax" << '\n';
-                    ss << "    mov QWORD [rbp-" << offset << "], rax" << '\n';
+                    ss << "    mov BYTE [rbp-" << offset << "], al" << '\n';
                     break;
                 }
 
@@ -186,9 +186,9 @@ namespace Bolt {
                     ss << "    ;; Inc" << '\n';
 
                     if (offset_type)
-                        ss << "    add QWORD [bss_mem+" << offset << "], 1" << '\n';
+                        ss << "    add BYTE [bss_mem+" << offset << "], 1" << '\n';
                     else
-                        ss << "    add QWORD [rbp-" << offset << "], 1" << '\n';
+                        ss << "    add BYTE [rbp-" << offset << "], 1" << '\n';
                     break;
                 }
 
@@ -200,9 +200,9 @@ namespace Bolt {
                     ss << "    ;; Dec" << '\n';
 
                     if (offset_type)
-                        ss << "    sub QWORD [bss_mem+" << offset << "], 1" << '\n';
+                        ss << "    sub BYTE [bss_mem+" << offset << "], 1" << '\n';
                     else
-                        ss << "    sub QWORD [rbp-" << offset << "], 1" << '\n';
+                        ss << "    sub BYTE [rbp-" << offset << "], 1" << '\n';
                     break;
                 }
 
@@ -495,7 +495,7 @@ namespace Bolt {
 
                     std::string s = SYM_SHARED_PTR_CAST(symbol)->to_string();
                     auto ins_let = MAKE_INS2(Instruction::Type::I_let, m_current_function->get_current_offset());
-                    m_current_function->set_offset(s, 8);
+                    m_current_function->set_offset(s, 1);
 #ifdef COMPILER_DEBUG
                     std::cout << m_current_function->to_string() << '\n';
 #endif
@@ -520,7 +520,7 @@ namespace Bolt {
                     std::string s = SYM_SHARED_PTR_CAST(symbol)->to_string();
                     auto ins_let = MAKE_INS2(Instruction::Type::I_global, m_bss_offset);
                     m_symbol_bss_offset_map[s] = m_bss_offset;
-                    m_bss_offset += 8;
+                    m_bss_offset += 1;
                     m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_let));
 #ifdef COMPILER_DEBUG
                     std::cout << "New Stack offset " << m_bss_offset << '\n';

@@ -1,0 +1,11 @@
+(defun demo)
+{
+    (let a 5)
+    (inc a)
+    (print a)
+}
+
+(defun main)
+{
+    (demo)
+}
