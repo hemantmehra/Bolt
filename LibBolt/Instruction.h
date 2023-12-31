@@ -32,7 +32,8 @@
     __ENUMERATE_INSTRUCTION_TYPE(__prog_start) \
     __ENUMERATE_INSTRUCTION_TYPE(__prog_end) \
     __ENUMERATE_INSTRUCTION_TYPE(I_set) \
-    __ENUMERATE_INSTRUCTION_TYPE(I_print_str)
+    __ENUMERATE_INSTRUCTION_TYPE(I_print_str) \
+    __ENUMERATE_INSTRUCTION_TYPE(__load_str) \
 
 namespace Bolt {
     class Instruction : public Object
@@ -49,13 +50,15 @@ namespace Bolt {
         Instruction(Type, int);
         Instruction(Type, int, int);
         Instruction(Type, int, int, std::string);
+        Instruction(Type, int, int, std::string, std::string);
         Type type();
         virtual bool is_instruction() const override { return true; }
         std::string to_string() override;
 
         int data_1() { return m_data_1; }
         int data_2() { return m_data_2; }
-        std::string data_str() { return m_data_str; }
+        std::string data_str_1() { return m_data_str_1; }
+        std::string data_str_2() { return m_data_str_2; }
 
         inline static std::unordered_map<std::string, Type> table = {
 #define __ENUMERATE_INSTRUCTION_TYPE(x) {#x, Type::x},
@@ -69,7 +72,8 @@ namespace Bolt {
         Type m_type;
         int m_data_1;
         int m_data_2;
-        std::string m_data_str;
+        std::string m_data_str_1;
+        std::string m_data_str_2;
     };
 }
 

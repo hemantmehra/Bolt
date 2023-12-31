@@ -12,6 +12,7 @@ namespace Bolt {
         virtual bool is_nil() const { return false; }
         virtual bool is_scaler() const { return false; }
         virtual bool is_symbol() const { return false; }
+        virtual bool is_string() const { return false; }
         virtual bool is_list() const { return false; }
         virtual bool is_expression() const { return false; }
         virtual bool is_block() const { return false; }

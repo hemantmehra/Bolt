@@ -114,6 +114,10 @@ namespace Bolt {
                 ss << "    push rax" << '\n';
             }
 
+            // else if (obj->is_string()) {
+                
+            // }
+
             else if (obj->is_function()) {
                 m_current_function = std::dynamic_pointer_cast<Function>(obj);
             }
@@ -168,7 +172,7 @@ namespace Bolt {
 
                 case Instruction::Type::I_set:
                 {
-                    std::string s = INS_SHARED_PTR_CAST(obj)->data_str();
+                    std::string s = INS_SHARED_PTR_CAST(obj)->data_str_1();
 
                     int stack_offset = get_symbol_stack_offset(s);
                     int bss_offset = get_symbol_bss_offset(s);
@@ -200,6 +204,7 @@ namespace Bolt {
                     ss << "    pop rbx" << '\n';
                     ss << "    mov rax, bss_mem" << '\n';
                     ss << "    add rax, rbx" << '\n';
+                    // ss << "    add rax, 1" << '\n';
                     ss << "    push rax" << '\n';
                     ss << "    mov rax, 1" << '\n'; // syscall 01
                     ss << "    mov rdi, 1" << '\n'; // fd
@@ -219,6 +224,27 @@ namespace Bolt {
                 case Instruction::Type::__call:
                 {
                     NOT_IMPLEMENTED();
+                    break;
+                }
+
+                case Instruction::Type::__load_str:
+                {
+                    std::string sym = INS_SHARED_PTR_CAST(obj)->data_str_1();
+                    std::string s = INS_SHARED_PTR_CAST(obj)->data_str_2();
+
+                    ss << "    ;; load str" << '\n';
+                    size_t curr_offset = get_symbol_bss_offset(sym);
+                    size_t bss_offset = curr_offset + 1;
+                    for (auto ch: s) {
+#ifdef COMPILER_DEBUG
+                        std::cout << "LOAD STR: " << curr_offset << ": " << bss_offset << '\n';
+#endif
+                        ss << "    mov BYTE [bss_mem+" << bss_offset << "], \'" << ch << "\'" << '\n';
+                        bss_offset++;
+                    }
+
+                    ss << "    mov rax, " << curr_offset + 1 << '\n';
+                    ss << "    push rax" << '\n';
                     break;
                 }
 
@@ -302,7 +328,7 @@ namespace Bolt {
                 case Instruction::Type::__label:
                 {
                     std::string label = "label_" + std::to_string(INS_SHARED_PTR_CAST(obj)->data_1());
-                    std::string label_name = INS_SHARED_PTR_CAST(obj)->data_str();
+                    std::string label_name = INS_SHARED_PTR_CAST(obj)->data_str_1();
 
                     ss << "    ;; label" << '\n';
 
@@ -558,10 +584,10 @@ namespace Bolt {
                     auto scaler = LIST_SHARED_PTR_CAST(rest)->get(1);
 
                     CHECK(symbol->is_symbol());
-                    CHECK(scaler->is_scaler() || scaler->is_expression());
+                    CHECK(scaler->is_scaler() || scaler->is_expression() || scaler->is_string());
 #ifdef COMPILER_DEBUG
-                    std::cout << "Let Sym: "<< symbol->to_string() << '\n';
-                    std::cout << "Let Scaler: "<< scaler->to_string() << '\n';
+                    std::cout << "Sym: "<< symbol->to_string() << '\n';
+                    std::cout << "Scaler: "<< scaler->to_string() << '\n';
 #endif
 
                     std::string s = SYM_SHARED_PTR_CAST(symbol)->to_string();
@@ -569,7 +595,13 @@ namespace Bolt {
 #ifdef COMPILER_DEBUG
                     std::cout << m_current_function->to_string() << '\n';
 #endif
-                    m_object_list.push_back(scaler);
+                    if (scaler->is_string()) {
+                        auto ins_load_str = MAKE_INS5(Instruction::Type::__load_str, 0, 0, symbol->to_string(), scaler->to_string());
+                        m_object_list.push_back(ins_load_str);
+                    }
+                    else {
+                        m_object_list.push_back(scaler);
+                    }
                     m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_set));
 #ifdef COMPILER_DEBUG
                     std::cout << "New Stack offset " << m_stack_offset << '\n';
@@ -578,7 +610,8 @@ namespace Bolt {
 
                 else if (ins_type == Instruction::Type::I_global) {
                     auto rest = LIST_SHARED_PTR_CAST(obj)->rest();
-                    CHECK(LIST_SHARED_PTR_CAST(rest)->length() > 0);
+                    int rest_length = LIST_SHARED_PTR_CAST(rest)->length();
+                    CHECK(rest_length > 0);
 
                     auto symbol = LIST_SHARED_PTR_CAST(rest)->get(0);
 
@@ -590,10 +623,22 @@ namespace Bolt {
                     std::string s = SYM_SHARED_PTR_CAST(symbol)->to_string();
                     auto ins_let = MAKE_INS2(Instruction::Type::I_global, m_bss_offset);
                     m_symbol_bss_offset_map[s] = m_bss_offset;
-                    m_bss_offset += 1;
+
+                    int inc_by = 1;
+                    if (rest_length > 1) {
+                        auto scaler = LIST_SHARED_PTR_CAST(rest)->get(1);
+                        inc_by = SCALER_SHARED_PTR_CAST(scaler)->as_integer();
+#ifdef COMPILER_DEBUG
+                    std::cout << "Reserve Global memory by " << inc_by << '\n';
+#endif
+                        // m_bss_offset += inc_by;
+                    }
+
+                    m_bss_offset += inc_by;
+
                     m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins_let));
 #ifdef COMPILER_DEBUG
-                    std::cout << "New Stack offset " << m_bss_offset << '\n';
+                    std::cout << "New bss offset " << m_bss_offset << '\n';
 #endif
                 }
 
@@ -603,9 +648,6 @@ namespace Bolt {
 
                     auto scaler_offset = LIST_SHARED_PTR_CAST(rest)->get(0);
                     auto scaler_size = LIST_SHARED_PTR_CAST(rest)->get(1);
-
-                    CHECK(scaler_offset->is_scaler());
-                    CHECK(scaler_size->is_scaler());
 
                     auto ins = MAKE_INS1(Instruction::Type::I_print_str);
                     m_object_list.push_back(scaler_offset);

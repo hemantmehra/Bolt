@@ -6,6 +6,7 @@
 #include <LibBolt/Object.h>
 #include <LibBolt/Scaler.h>
 #include <LibBolt/Symbol.h>
+#include <LibBolt/String.h>
 #include <LibBolt/List.h>
 #include <LibBolt/Instruction.h>
 #include <LibBolt/Function.h>
@@ -15,10 +16,12 @@
 #define MAKE_INS2(x, y) std::make_shared<Bolt::Instruction>(x, y)
 #define MAKE_INS3(x, y, z) std::make_shared<Bolt::Instruction>(x, y, z)
 #define MAKE_INS4(x, y, z, s) std::make_shared<Bolt::Instruction>(x, y, z, s)
+#define MAKE_INS5(x, y, z, a, b) std::make_shared<Bolt::Instruction>(x, y, z, a, b)
 
 #define OBJECT_SHARED_PTR_CAST(x) std::static_pointer_cast<Object>(x)
 #define SCALER_SHARED_PTR_CAST(x) std::static_pointer_cast<Scaler>(x)
 #define SYM_SHARED_PTR_CAST(x) std::dynamic_pointer_cast<Symbol>(x)
+#define STR_SHARED_PTR_CAST(x) std::dynamic_pointer_cast<String>(x)
 #define LIST_SHARED_PTR_CAST(x) std::dynamic_pointer_cast<List>(x)
 #define INS_SHARED_PTR_CAST(x) std::dynamic_pointer_cast<Instruction>(x)
 

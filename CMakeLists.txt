@@ -16,4 +16,5 @@ add_executable(bolt bolt.cpp
                     LibBolt/Block.cpp
                     LibBolt/Parser.cpp
                     LibBolt/Function.cpp
+                    LibBolt/String.cpp
 )
