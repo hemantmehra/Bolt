@@ -1,8 +1,0 @@
-(defun main)
-{
-    (global a 6)
-    (global b)
-    (set a "Hello")
-    (set b 10)
-    (print_str a 6)
-}
