@@ -3,12 +3,12 @@
     (global a)
     (global b)
     (global c)
+    (global d)
 
     (set a 65)
     (set b 66)
     (set c 67)
+    (set d 10)
 
-    (print a)
-    (print b)
-    (print c)
+    (print_str 0 4)
 }

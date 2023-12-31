@@ -191,6 +191,25 @@ namespace Bolt {
                     break;
                 }
 
+                case Instruction::Type::I_print_str:
+                {
+                    // offset, size -> buffer
+
+                    ss << "    ;; Print String" << '\n';
+                    ss << "    pop rcx" << '\n';
+                    ss << "    pop rbx" << '\n';
+                    ss << "    mov rax, bss_mem" << '\n';
+                    ss << "    add rax, rbx" << '\n';
+                    ss << "    push rax" << '\n';
+                    ss << "    mov rax, 1" << '\n'; // syscall 01
+                    ss << "    mov rdi, 1" << '\n'; // fd
+                    ss << "    pop rsi" << '\n'; // buffer
+                    ss << "    mov rdx, rcx" << '\n'; // size
+                    ss << "    syscall" << '\n';
+
+                    break;
+                }
+
                 case Instruction::Type::I_global:
                 case Instruction::Type::I_defun:
                 {
@@ -578,6 +597,22 @@ namespace Bolt {
 #endif
                 }
 
+                else if (ins_type == Instruction::Type::I_print_str) {
+                    auto rest = LIST_SHARED_PTR_CAST(obj)->rest();
+                    CHECK(LIST_SHARED_PTR_CAST(rest)->length() > 1);
+
+                    auto scaler_offset = LIST_SHARED_PTR_CAST(rest)->get(0);
+                    auto scaler_size = LIST_SHARED_PTR_CAST(rest)->get(1);
+
+                    CHECK(scaler_offset->is_scaler());
+                    CHECK(scaler_size->is_scaler());
+
+                    auto ins = MAKE_INS1(Instruction::Type::I_print_str);
+                    m_object_list.push_back(scaler_offset);
+                    m_object_list.push_back(scaler_size);
+                    m_object_list.push_back(OBJECT_SHARED_PTR_CAST(ins));
+                }
+ 
                 else if (ins_type == Instruction::Type::I_inc || ins_type == Instruction::Type::I_dec) {
                     auto rest = LIST_SHARED_PTR_CAST(obj)->rest();
                     CHECK(LIST_SHARED_PTR_CAST(rest)->length() > 0);
